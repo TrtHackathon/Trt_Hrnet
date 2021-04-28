@@ -8,7 +8,7 @@
 #include "opencv2/opencv.hpp"
 
 int main(int argc, char**argv) {
-    if (argc < 1) {
+    if (argc < 3) {
         std::cerr << "--trt_model, required!" << std::endl
             << "--input_height, default 384" << std::endl
             << "--input_width, default 288" << std::endl
