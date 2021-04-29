@@ -1,16 +1,53 @@
-1.requirement
-    1.下载cudnn、TensorRT
-    2.安装opencv
-    3.安装pytorch
+# TRT HRNET
 
-2.download
-    1.git clone https://github.com/TrtHackathon/Trt_Hrnet.git
-    2.cd Trt_Hrnet && git submodule update
+TODO: sunli
+配个图！
 
-3.build
-    mkdir build && cmake .. -DTRT_DIR xxx && make -j
+## 评估结果
 
-3.usage
-    1. python3 hrnet2onnx.py --cfg xx --modelDir xx
-    2. 使用 ./onnx2trt 查看参数
-    3. 使用./trtInference 查看参数
+| 实现    | 耗时(ms) | 吞吐(img/s) | 加速比 |
+|---------|----------|-------------|--------|
+| pytorch | X        | XX          | 1.0    |
+| TRT     | Y        | YY          | ??     |
+
+# Docker
+
+国内网络由于众所周知的问题，`docker build`时容易抽风。
+
+## 构建
+
+```bash
+docker build --pull -t trt_hrnet .
+```
+
+## 运行
+
+```bash
+docker run -it --rm -v $(realpath .):$(realpath .) trt_hrnet
+```
+
+# 裸机
+
+用户 **自行解决** CUDNN、TensorRT的相关依赖。
+
+```bash
+apt install libopencv-dev
+pip install pytorch
+```
+
+## 构建
+
+```bash
+mkdir build
+cd build
+# 如果自行安装TensorRT，请使用
+# cmake .. -DTRT_DIR <path/to/trt/directory>
+cmake ..
+cmake --build .
+```
+
+# 使用
+
+1. `python3 hrnet2onnx.py --cfg xx --modelDir xx`
+2. `./onnx2trt` 查看相关参数
+3. `./trtInference` 查看相关参数
