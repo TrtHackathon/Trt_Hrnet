@@ -13,11 +13,12 @@ import numpy as np
 from PIL import Image
 import torchvision.transforms as transforms
 from core.inference import get_final_preds
+import time
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train keypoints network')
     # general
-    parser.add_argument('--cfg', default="w48_384x288_adam_lr1e-3.yaml", help='experiment configure file name', type=str)
+    parser.add_argument('--cfg', help='experiment configure file name', type=str, required=True)
 
     parser.add_argument('opts', help="Modify config options using the command-line", default=None, nargs=argparse.REMAINDER)
 
@@ -35,10 +36,11 @@ update_config(cfg, args)
 class TrtHrnet(torch.nn.Module):
     def __init__(self):
         super(TrtHrnet, self).__init__()
-        self.mean = torch.tensor((- 0.485 * 255,- 0.456*255,- 0.406*255))
-        self.std = torch.tensor((1.0/(0.229 * 255), 1.0/(0.224*255), 1.0/(0.225*255)))
+        self.mean = torch.tensor((- 0.485 * 255,- 0.456*255,- 0.406*255)).cuda()
+        self.std = torch.tensor((1.0/(0.229 * 255), 1.0/(0.224*255), 1.0/(0.225*255))).cuda()
         self.model = models.pose_hrnet.get_pose_net(cfg, False)
-        self.model.load_state_dict(torch.load("pose_hrnet_w48_384x288.pth",map_location=torch.device('cpu')), strict=False)
+        self.model.load_state_dict(torch.load(args.modelDir, map_location=torch.device('cpu')), strict=False)
+        self.model = self.model.cuda()
 
     def forward(self, x):
         #x = x.float()
@@ -57,6 +59,7 @@ class TrtHrnet(torch.nn.Module):
 #model.load_state_dict(torch.load("pose_hrnet_w48_384x288.pth",map_location=torch.device('cpu')), strict=False)
 
 model = TrtHrnet()
+'''
 src_img = Image.open("test.jpg")
 input_img = src_img.resize((288,384))
 #print(src_img.size,input_img.size)
@@ -72,7 +75,7 @@ input = transform0(input_img).unsqueeze(0)
 input = input.permute(0,2,3,1) * 255
 
 input.detach().numpy().tofile("input.txt")
-
+'''
 #x = transform(input_img)
 #print(x)
 #print(model)
@@ -92,7 +95,6 @@ print(input.shape)
 model.load_state_dict(torch.load("pose_hrnet_w48_384x288.pth",map_location=torch.device('cpu')), strict=False)
 
 #inference
-model.eval()
 
 
 #model_.load_state_dict(torch.load("pose_hrnet_w48_384x288.pth",map_location=torch.device('cpu')), strict=False)
@@ -106,13 +108,25 @@ model_.eval()
 output = model_(input)
 print(output)
 '''
-#input_np = np.random.randint(-128, 127, size = (1,3, 384, 288)).astype(np.float32)/128
-#input_np.tofile("input.txt")
-#input_tensor = torch.from_numpy(input_np)
+batch = [1,4,8,12]
 
-val,idx = model.forward(input)
-val = val.detach().numpy()
-idx = idx.detach().numpy()
+#input_np = np.random.randint(-128, 127, size = (1,, 384, 288)).astype(np.float32)/128
+#input_np.tofile("input.txt")
+model.eval()
+model = model.cuda()
+
+for b in batch:
+    input_np = np.random.randint(0, 255, size = (b, 384, 288, 3)).astype(np.float32)
+    input_tensor = torch.from_numpy(input_np)
+    input = input_tensor.cuda()
+    st = time.time()
+    for i in range(100):
+        val,idx = model.forward(input)
+    print(b, (time.time() - st) * 10)
+sys.exit("")
+
+#val = val.detach().numpy()
+#Eidx = idx.detach().numpy()
 #print(x)
 #print(hotmap.reshape(-1)[:10])
 

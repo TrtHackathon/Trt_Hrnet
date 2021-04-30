@@ -12,19 +12,19 @@ using namespace nvinfer1;
 using namespace nvonnxparser;
 
 int main(int argc, char** argv) {
-  if (argc < 1) {
+  if (argc < 5) {
     std::cerr
       << "--model, required!" << std::endl
       << "--output, required!" << std::endl
       << "--fp16, default false" << std::endl
-      << "--max_batch_size, default 1" << std::endl;
+      << "--max_batch_size, default 128" << std::endl;
 
     exit(0);
   }
 
   std::unordered_map<std::string, std::string> args = {
     {"--fp16","false"},
-    {"--max_batch_size","64"},
+    {"--max_batch_size","128"},
     {"--model",""},
     {"--output","pose_hrnet_w48_384x288.trt"},
   };
@@ -89,6 +89,12 @@ int main(int argc, char** argv) {
   IHostMemory* trtModelStream = engine->serialize();
 
   std::string trt_file = args["--output"];
+  if(args["--fp16"] == "false") {
+    "float_" + trt_file;
+  } else {
+    "half_" + trt_file;
+  }
+
   std::cout << "Saving model " << trt_file << std::endl;
   std::ofstream ofs(trt_file, std::ios::binary);
   if (ofs.fail()) {

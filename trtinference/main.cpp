@@ -1,5 +1,6 @@
 
 #include <map>
+#include <chrono>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -30,6 +31,7 @@ int main(int argc, char**argv) {
             std::cerr << argv[idx] << " is unknown!" << std::endl;
             exit(0);
         }
+	args[argv[idx]] = argv[idx + 1];
     }
 
     for (auto& arg : args) {
@@ -47,6 +49,31 @@ int main(int argc, char**argv) {
     int input_width = std::stoi(args["--input_width"]);
     int map_height = std::stoi(args["--map_height"]);
     int map_width = std::stoi(args["--map_width"]);
+
+    {
+        auto trt_buf = _trt_engine.get_buf();
+        auto buf = (float*)trt_buf.get();
+        int batchs[] = {1, 4, 8, 12};
+
+        for(int idx = 0 ; idx < 4 ; ++idx) {
+            int b = batchs[idx];
+	    size_t count = b * input_height * input_width * 3;
+	    for(int idy = 0 ; idy < count ; ++idy) {
+                buf[idy] = (float)(rand() % 255);
+	    }
+
+            std::unordered_map<std::string, char*> input = { {"input",(char*)buf} };
+            std::unordered_map<std::string, std::vector<float>> output;
+
+            auto start = std::chrono::system_clock::now();
+            for(int t = 0 ; t < 100 ; ++t) {
+                _trt_engine.predict(b, input, output);
+	    }
+	    auto end   = std::chrono::system_clock::now();
+	    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	    std::cout<<b<<" "<<duration.count()/(1000.0 * 100)<<std::endl;
+        }
+    }
 
     while (true) {
 
