@@ -1,7 +1,6 @@
 # TRT HRNET
 
-TODO: sunli
-配个图！
+![Image text](https://github.com/TrtHackathon/Trt_Hrnet/tree/main/image/pose_hrnet_w48_384x288.png)
 
 ## 评估结果
 
