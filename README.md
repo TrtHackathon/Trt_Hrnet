@@ -53,6 +53,7 @@ cmake --build .
 
 # 使用
 
-1. `python3 hrnet2onnx.py --cfg xx --modelDir xx`
-2. `./onnx2trt` 查看相关参数
-3. `./trtInference` 查看相关参数
+1. `python3 hrnet2onnx.py --cfg xx --modelDir xx
+2. `python3 hrnet_infer.py --cfg xx --modelDir xx #用作测试使用 详细可以查看脚本 输入数据使用随机数
+3. `./onnx2trt` 查看相关参数
+4. `./trtInference` 查看相关参数 #用做测试结果 数据数据使用了随机数
